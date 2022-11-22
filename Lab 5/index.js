@@ -1,77 +1,68 @@
-const express = require("express"),
-app = express();
-app.set("port", process.env.PORT || 3000);
-app.use(express.static(__dirname));
+const mongoose = require("mongoose");
 
-app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/views/index.html");
-  var url = req.url;
-  var date = new Date();
-  console.log("Request recieved for page", url," at ", date);
+const express = require("express"),
+  app = express(),
+  Books = require("./models/books"),
+  BooksController = require("./controllers/booksController"),
+  errorController = require("./controllers/errorController"),
+  layouts = require("express-ejs-layouts");
+
+app.set("port", process.env.PORT || 3000);
+app.set("view engine", "ejs");
+
+app.use(layouts, express.static(__dirname));
+app.use(
+  express.urlencoded({
+    extended: false,
+  })
+);
+
+app.use(express.json());
+
+mongoose.connect(
+  "mongodb+srv://sdillibabu:WAS500@was500-books.adramuw.mongodb.net/?retryWrites=true&w=majority",
+  { useUnifiedTopology: true }
+);
+
+const db = mongoose.connection;
+
+db.once("open", () => {
+  console.log("Successfully connected to MongoDB using Mongoose!");
 });
 
-app.get("/books.html", (req, res) => {
-  res.sendFile(__dirname + "/views/books.html");
-  var url = req.url;
-  var date = new Date();
-  console.log("Request recieved for page", url," at ", date);
+app.use((req, res, next) => {
+  date = new Date();
+  console.log(`request made to: ${req.url} at ${date}`);
+  next();
+});
+
+app.get("", (req, res) => {
+  res.render('index');
+});
+
+app.get("/books.html", BooksController.getAllBooks, (req, res) => {
+  res.render('books', { books: req.data });
 });
 
 app.get("/contact.html", (req, res) => {
-  res.sendFile(__dirname + "/views/contact.html");
-  var url = req.url;
-  var date = new Date();
-  console.log("Request recieved for page", url," at ", date);
+  res.render('contact');
 });
 
 app.get("/survey.html", (req, res) => {
-  res.sendFile(__dirname + "/views/survey.html");
-  var url = req.url;
-  var date = new Date();
-  console.log("Request recieved for page", url," at ", date);
+  res.render('survey');
 });
 
-app.get("/books/percy-jackson-and-the-lightening-thief.html", (req, res) => {
-  res.sendFile(__dirname + "/views/books list/percy jackson and the lightening thief.html");
-  var url = req.url;
-  var date = new Date();
-  console.log("Request recieved for page", url," at ", date);
+app.get("/books/:books", BooksController.getBook, (req, res) => {
+  res.render('bookpage', { info: req.data });
 });
 
-app.get("/books/percy-jackson-and-the-sea-of-monsters.html", (req, res) => {
-  res.sendFile(__dirname + "/views/books list/percy jackson and the sea of monsters.html");
-  var url = req.url;
-  var date = new Date();
-  console.log("Request recieved for page", url," at ", date);
+app.get("/honesty.html", (req, res) => {
+  res.render('honesty');
 });
 
-app.get("/books/percy-jackson-and-the-titan's-curse.html", (req, res) => {
-  res.sendFile(__dirname + "/views/books list/percy jackson and the titan's curse.html");
-  var url = req.url;
-  var date = new Date();
-  console.log("Request recieved for page", url," at ", date);
-});
-
-app.get("/books/percy-jackson-and-the-battle-of-the-labyrinth.html", (req, res) => {
-  res.sendFile(__dirname + "/views/books list/percy jackson and the battle of the labyrinth.html");
-  var url = req.url;
-  var date = new Date();
-  console.log("Request recieved for page", url," at ", date);
-});
-
-app.get("/books/percy-jackson-and-the-last-olympian.html", (req, res) => {
-  res.sendFile(__dirname + "/views/books list/percy jackson and the last olympian.html");
-  var url = req.url;
-  var date = new Date();
-  console.log("Request recieved for page", url," at ", date);
-});
-
-app.all('*', (req, res) => {
-  res.sendFile(__dirname + "/views/404.html");
-  var url = req.url;
-  var date = new Date();
-  console.log("Error occured. Request recieved for page", url," that could not be found on the server. ", date);
-});
+app.use(errorController.logErrors);
+app.use(errorController.respondNoResourceFound);
+app.use(errorController.respondInternalError);
 
 app.listen(app.get("port"), () => {
   console.log(
