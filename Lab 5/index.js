@@ -20,7 +20,7 @@ app.use(
 app.use(express.json());
 
 mongoose.connect(
-  "mongodb+srv://sdillibabu:WAS500@was500-books.adramuw.mongodb.net/?retryWrites=true&w=majority",
+  "mongodb+srv://sdillibabu:WAS500@was500-books.yjhil0b.mongodb.net/?retryWrites=true&w=majority",
   { useUnifiedTopology: true }
 );
 
